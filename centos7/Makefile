@@ -12,7 +12,7 @@ all : copy_image nocloud create_vm
 clean:
 	rm -rf /var/lib/libvirt/images/$(virtualmachine_name)_vm.qcow2
 	rm -rf /var/lib/libvirt/images/$(virtualmachine_name)_nocloud.iso
-	virsh shutdown $(virtualmachine_name)
+	virsh destroy $(virtualmachine_name)
 	sleep 2
 	virsh undefine $(virtualmachine_name)
 
@@ -21,7 +21,11 @@ fetch_image:
 
 # --selinux-relabel needed for selinux images only
 update_image:
-	virt-customize -a $(libvirt_storage)/$(virtualmachine_name).qcow2 --update --selinux-relabel
+	virt-customize -a $(libvirt_storage)/$(virtualmachine_name).qcow2 --update --install nano
+	virt-customize -a $(libvirt_storage)/$(virtualmachine_name).qcow2 --no-network --run-command 'echo "" > /etc/resolv.conf' --selinux-relabel
+	qemu-img convert -O qcow2 -c $(libvirt_storage)/$(virtualmachine_name).qcow2 $(libvirt_storage)/$(virtualmachine_name).qcow2c
+	# rm -rf $(libvirt_storage)/$(virtualmachine_name).qcow2
+	# mv $(libvirt_storage)/$(virtualmachine_name).qcow2c $(libvirt_storage)/$(virtualmachine_name).qcow2
 
 copy_image: $(libvirt_storage)/$(virtualmachine_name).qcow2
 	cp $(libvirt_storage)/$(virtualmachine_name).qcow2 $(libvirt_storage)/$(virtualmachine_name)_vm.qcow2
