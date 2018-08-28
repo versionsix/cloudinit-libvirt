@@ -1,0 +1,3 @@
+---
+instance-id:    centos7-cloudinit
+local-hostname: centos

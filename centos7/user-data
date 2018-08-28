@@ -1,0 +1,38 @@
+#cloud-config
+yum_repos:
+    epel:
+        baseurl: http://dl.fedoraproject.org/pub/epel/7Server/$basearch
+        enabled: true
+        failovermethod: priority
+        gpgcheck: false
+        gpgkey: http://archive.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-7Server
+        name: Extra Packages for Enterprise Linux 7
+
+package_update: true
+package_upgrade: true
+
+ssh_pwauth: True
+
+users:
+  - default
+  - name: cloud
+    groups: sudo
+    shell: /bin/bash
+    sudo:  ALL=(ALL) NOPASSWD:ALL
+    lock_passwd: false
+    passwd: $1$xyz$gHGNZEUfkr7kO4T0iQWw71 # openssl passwd -1 -salt xyz cloud
+    ssh-authorized-keys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA6NF8iallvQVp22WDkTkyrtvp9eWW6A8YVr+kz4TjGYe7gHzIw+niNltGEFHzD8+v1I2YJ6oXevct1YeS0o9HZyN1Q9qgCgzUFtdOKLv6IedplqoPkcmF0aYet2PkEDo3MlTBckFXPITAMzF8dJSIFo9D8HfdOV0IAdx4O7PtixWKn5y2hMNG0zQPyUecp4pzC6kivAIhyfHilFR61RGL+GPXQ2MWZWFYbAGjyiYJnAmCP3NOTd0jMZEnDkbUvxhMmBYSdETk1rRgm+R4LOzFUGaHqHDLKLX+FIPKcF96hrucXzcWyLbIbEgE98OHlnVYCzRdK8jlqm8tehUc9c9WhQ== Insert your own SSH key here
+
+bootcmd:
+  - [ cloud-init-per, once, firstboot, touch, /run/firstboot ]
+
+runcmd:
+  - echo "cloud"
+
+# Reboot if all finished
+power_state:
+  delay: "0"
+  mode: reboot
+  message: Cloud-Init finished. Rebooting system in one minute
+  condition: True
