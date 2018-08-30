@@ -1,4 +1,4 @@
-virtualmachine_name 		= centos7-cloudinit
+virtualmachine_name 		= centos7-nested-libvirt
 virtualmachine_image 		= https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.qcow2c
 virtualmachine_network 	= default
 virtualmachine_os				= rhel7.5
@@ -47,7 +47,7 @@ create_vm: $(libvirt_storage)/$(virtualmachine_name)_nocloud.iso $(libvirt_stora
 		--cpu mode=host-passthrough \
 		--vcpus 2 \
 		--os-variant $(virtualmachine_os) \
+		--cpu mode=host-passthrough \
 		--import \
 		--graphics none \
 		--console pty,target_type=virtio
-		# --cpu mode=host-passthrough
