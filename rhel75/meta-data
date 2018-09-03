@@ -1,0 +1,3 @@
+---
+instance-id:    rhel75-cloudinit
+local-hostname: rhel

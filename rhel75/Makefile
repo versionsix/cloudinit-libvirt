@@ -1,6 +1,5 @@
-virtualmachine_name 		= centos7-cloudinit
-virtualmachine_image 		= https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.qcow2c
-virtualmachine_template	= CentOS-7-x86_64-GenericCloud.qcow2
+virtualmachine_name 		= rhel75-cloudinit
+virtualmachine_image 		= ../rhel-server-7.5-x86_64-kvm.qcow2
 virtualmachine_network 	= default
 virtualmachine_os				= rhel7.5
 virtualmachine_resize		= 10G
@@ -20,15 +19,10 @@ clean:
 clean_image:
 	rm -rf $(libvirt_storage)/$(virtualmachine_name).qcow2
 
-# --selinux-relabel needed for selinux images only
 fetch_update_image: $(libvirt_storage)/$(virtualmachine_name).qcow2
 $(libvirt_storage)/$(virtualmachine_name).qcow2:
-	wget -O $(libvirt_storage)/$(virtualmachine_name).qcow2 $(virtualmachine_image)
-	virt-customize -a $(libvirt_storage)/$(virtualmachine_name).qcow2 --update --install nano
-	virt-customize -a $(libvirt_storage)/$(virtualmachine_name).qcow2 --no-network --run-command 'echo "" > /etc/resolv.conf' --selinux-relabel
-	qemu-img convert -O qcow2 -c $(libvirt_storage)/$(virtualmachine_name).qcow2 $(libvirt_storage)/$(virtualmachine_name).qcow2c
+	cp $(virtualmachine_image) $(libvirt_storage)/$(virtualmachine_name).qcow2c
 	qemu-img resize $(libvirt_storage)/$(virtualmachine_name).qcow2c $(virtualmachine_resize)
-	rm -rf $(libvirt_storage)/$(virtualmachine_name).qcow2
 	mv $(libvirt_storage)/$(virtualmachine_name).qcow2c $(libvirt_storage)/$(virtualmachine_name).qcow2
 
 copy_image: $(libvirt_storage)/$(virtualmachine_name)_vm.qcow2
@@ -54,7 +48,4 @@ create_vm: $(libvirt_storage)/$(virtualmachine_name)_nocloud.iso $(libvirt_stora
 		--os-variant $(virtualmachine_os) \
 		--graphics none \
 		--console pty,target_type=virtio
-		# --noautoconsole \
-		# --autostart \
-		# --cpu mode=host-passthrough
 endif
