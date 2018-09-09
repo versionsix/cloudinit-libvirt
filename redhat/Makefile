@@ -1,6 +1,5 @@
-virtualmachine_name 		= centos7-cloudinit
-virtualmachine_image 		= https://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.qcow2c
-virtualmachine_template	= CentOS-7-x86_64-GenericCloud.qcow2
+virtualmachine_name 		= redhat
+virtualmachine_image 		= ../rhel-server-7.5-x86_64-kvm.qcow2
 virtualmachine_network 	= default
 virtualmachine_os				= rhel7.5
 virtualmachine_resize		= 10G
@@ -18,22 +17,17 @@ clean:
 	virsh undefine $(virtualmachine_name) || true
 
 clean_image:
-	rm -rf $(libvirt_storage)/$(virtualmachine_template)
+	rm -rf $(libvirt_storage)/$(virtualmachine_name).qcow2
 
-# --selinux-relabel needed for selinux images only
-fetch_update_image: $(libvirt_storage)/$(virtualmachine_template)
-$(libvirt_storage)/$(virtualmachine_template):
-	wget -O $(libvirt_storage)/$(virtualmachine_template) $(virtualmachine_image)
-	virt-customize -a $(libvirt_storage)/$(virtualmachine_template) --update --install nano
-	virt-customize -a $(libvirt_storage)/$(virtualmachine_template) --no-network --run-command 'echo "" > /etc/resolv.conf' --selinux-relabel
-	qemu-img resize $(libvirt_storage)/$(virtualmachine_template) $(virtualmachine_resize)
-	qemu-img convert -O qcow2 -c $(libvirt_storage)/$(virtualmachine_template) $(libvirt_storage)/$(virtualmachine_template)c
-	rm -rf $(libvirt_storage)/$(virtualmachine_template)
-	mv $(libvirt_storage)/$(virtualmachine_template)c $(libvirt_storage)/$(virtualmachine_template)
+fetch_update_image: $(libvirt_storage)/$(virtualmachine_name).qcow2
+$(libvirt_storage)/$(virtualmachine_name).qcow2:
+	cp $(virtualmachine_image) $(libvirt_storage)/$(virtualmachine_name).qcow2c
+	qemu-img resize $(libvirt_storage)/$(virtualmachine_name).qcow2c $(virtualmachine_resize)
+	mv $(libvirt_storage)/$(virtualmachine_name).qcow2c $(libvirt_storage)/$(virtualmachine_name).qcow2
 
 copy_image: $(libvirt_storage)/$(virtualmachine_name)_vm.qcow2
-$(libvirt_storage)/$(virtualmachine_name)_vm.qcow2: $(libvirt_storage)/$(virtualmachine_template)
-	cp $(libvirt_storage)/$(virtualmachine_template) $(libvirt_storage)/$(virtualmachine_name)_vm.qcow2
+$(libvirt_storage)/$(virtualmachine_name)_vm.qcow2: $(libvirt_storage)/$(virtualmachine_name).qcow2
+	cp $(libvirt_storage)/$(virtualmachine_name).qcow2 $(libvirt_storage)/$(virtualmachine_name)_vm.qcow2
 
 nocloud: $(libvirt_storage)/$(virtualmachine_name)_nocloud.iso
 $(libvirt_storage)/$(virtualmachine_name)_nocloud.iso: meta-data user-data network-config
@@ -54,7 +48,4 @@ create_vm: $(libvirt_storage)/$(virtualmachine_name)_nocloud.iso $(libvirt_stora
 		--os-variant $(virtualmachine_os) \
 		--graphics none \
 		--console pty,target_type=virtio
-		# --noautoconsole \
-		# --autostart \
-		# --cpu mode=host-passthrough
 endif

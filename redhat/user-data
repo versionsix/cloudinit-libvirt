@@ -1,0 +1,47 @@
+#cloud-config
+yum_repos:
+    epel:
+        baseurl: http://dl.fedoraproject.org/pub/epel/7Server/$basearch
+        enabled: true
+        failovermethod: priority
+        gpgcheck: false
+        gpgkey: http://archive.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-7Server
+        name: Extra Packages for Enterprise Linux 7
+
+# package_update: true
+# package_upgrade: true
+
+ssh_pwauth: True
+
+users:
+  - default
+  - name: cloud
+    groups: sudo
+    shell: /bin/bash
+    sudo:  ALL=(ALL) NOPASSWD:ALL
+    lock_passwd: false
+    passwd: $1$xyz$gHGNZEUfkr7kO4T0iQWw71 # openssl passwd -1 -salt xyz cloud
+    ssh-authorized-keys:
+      - ssh-rsa AAAAB...== Insert your own SSH key here
+
+write_files:
+  - path: /etc/issue
+    permissions: '0644'
+    content: |
+      \S
+      Kernel \r on an \m
+      IpV4(eth0): \4{eth0}
+      IpV6(eth0): \6{eth0}
+
+bootcmd:
+  - [ cloud-init-per, once, firstboot, touch, /run/firstboot ]
+
+runcmd:
+  - echo "cloud"
+
+# # Reboot if all finished
+# power_state:
+#   delay: "+1"
+#   mode: reboot
+#   message: Cloud-Init finished. Rebooting system in one minute
+#   condition: True
